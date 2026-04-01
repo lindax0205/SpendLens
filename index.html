@@ -616,6 +616,39 @@ body {
 .cat-form-row .cat-form-group.color-group { flex: 0 0 80px; }
 .cat-form-group input[type="color"] { padding: 2px; height: 36px; cursor: pointer; }
 .cat-color-preview { display: inline-block; width: 14px; height: 14px; border-radius: 50%; vertical-align: middle; margin-left: 4px; border: 1px solid var(--color-border); }
+
+/* ===== REVIEW PAGE ===== */
+.review-list { display: flex; flex-direction: column; gap: 8px; }
+.review-item {
+  display: flex; align-items: center; gap: 14px;
+  padding: 14px 18px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  transition: transform 0.15s ease, box-shadow 0.2s, opacity 0.3s;
+}
+.review-item:hover { box-shadow: var(--shadow-sm); }
+.review-item.assigned { opacity: 0.5; transform: scale(0.98); }
+.review-item .review-date { font-size: 12px; color: var(--color-text-muted); white-space: nowrap; min-width: 80px; }
+.review-item .review-info { flex: 1; min-width: 0; }
+.review-item .review-cp { font-weight: 600; font-size: 13px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.review-item .review-desc { font-size: 12px; color: var(--color-text-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-top: 2px; }
+.review-item .review-amount { font-weight: 600; font-size: 13px; white-space: nowrap; font-variant-numeric: tabular-nums; min-width: 90px; text-align: right; }
+.review-cats { display: flex; flex-wrap: wrap; gap: 4px; max-width: 360px; }
+.review-cats button {
+  padding: 4px 10px; border-radius: var(--radius-pill);
+  font-size: 11px; font-weight: 550; border: 1px solid var(--color-border);
+  cursor: pointer; background: var(--color-surface); color: var(--color-text);
+  transition: all 0.15s ease;
+  white-space: nowrap;
+}
+.review-cats button:hover { transform: translateY(-1px); box-shadow: var(--shadow-sm); }
+.review-progress { margin-bottom: 16px; }
+.review-progress-bar { width: 100%; height: 6px; background: var(--color-surface-2); border-radius: 3px; overflow: hidden; margin-top: 8px; }
+.review-progress-fill { height: 100%; background: linear-gradient(90deg, var(--color-accent-pink), var(--color-accent-sky)); border-radius: 3px; transition: width 0.4s ease; }
+.review-stats { display: flex; gap: 16px; font-size: 13px; color: var(--color-text-muted); }
+.review-stats strong { color: var(--color-text); }
+
 .fx-table { width: 100%; font-size: 13px; }
 .fx-table td, .fx-table th { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--color-border); }
 .fx-table th { font-size: 11px; text-transform: uppercase; letter-spacing: 0.04em; color: var(--color-text-muted); font-weight: 600; }
@@ -764,6 +797,10 @@ body {
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
       Transactions
     </button>
+    <button class="nav-item" onclick="showPage('review')" data-page="review">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Review
+    </button>
     <button class="nav-item" onclick="showPage('settings')" data-page="settings">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
       Settings
@@ -901,6 +938,20 @@ body {
     </div>
   </div>
 
+  <!-- REVIEW PAGE -->
+  <div id="page-review" class="page">
+    <div class="page-header" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:12px;">
+      <div>
+        <h1>Review Uncategorized</h1>
+        <p id="reviewSubtitle">Quickly assign categories to uncategorized transactions.</p>
+      </div>
+      <div style="display:flex; gap:8px;">
+        <button class="btn btn-secondary btn-sm" onclick="applyLearnedToAll()" title="Re-run auto-categorizer with learned mappings on all uncategorized items">Re-categorize All</button>
+      </div>
+    </div>
+    <div id="reviewContent"></div>
+  </div>
+
 </div>
 
 <!-- MODAL CONTAINER -->
@@ -928,6 +979,7 @@ let txFilters = { search: '', category: '', source: '', type: '' };
 let dateRange = 'all';
 let displayCurrency = 'HKD';
 let openDropdownId = null;
+let learnedMappings = {}; // { 'counterparty_lowercase': 'category_id' }
 
 // ============================================================
 //  DEFAULT CATEGORIES
@@ -978,6 +1030,7 @@ function showPage(page) {
   document.querySelectorAll('.mobile-nav button').forEach(n => n.classList.toggle('active', n.dataset.page === page));
   if (page === 'dashboard') renderDashboard();
   if (page === 'transactions') renderTransactions();
+  if (page === 'review') renderReview();
   if (page === 'settings') renderSettings();
 }
 
@@ -1027,10 +1080,49 @@ function formatCurrency(amount, currency) {
 }
 
 // ============================================================
+//  CHINESE-ENGLISH MERCHANT ALIASES
+// ============================================================
+const MERCHANT_ALIASES = {
+  '麦当劳': 'mcdonald', 'mcdonalds': '麦当劳', '肯德基': 'kfc',
+  '星巴克': 'starbucks', '必胜客': 'pizza hut', '赛百味': 'subway',
+  '优衣库': 'uniqlo', '宜家': 'ikea', '无印良品': 'muji',
+  '沃尔玛': 'walmart', '家乐福': 'carrefour', '好市多': 'costco',
+  '屈臣氏': 'watsons', '万宁': 'mannings', '百佳': 'park n shop',
+  '惠康': 'wellcome', '丝芙兰': 'sephora', '耐克': 'nike',
+  '阿迪达斯': 'adidas', '苹果': 'apple', '华为': 'huawei',
+  '小米': 'xiaomi', '京东': 'jd.com', '淘宝': 'taobao',
+  '拼多多': 'pinduoduo', '天猫': 'tmall', '美团': 'meituan',
+  '饿了么': 'eleme', '滴滴': 'didi', '支付宝': 'alipay',
+  '微信': 'wechat', '海底捞': 'haidilao', '鼎泰丰': 'din tai fung',
+  '吉野家': 'yoshinoya', '大家乐': 'cafe de coral', '大快活': 'fairwood',
+  '翠华': 'tsui wah', '谭仔': 'tam jai', '太平洋咖啡': 'pacific coffee',
+  '元气寿司': 'genki sushi', '一风堂': 'ippudo', '丸龟制面': 'marugame',
+  '优品360': 'best mart 360', '日本城': 'japan home',
+  '国泰': 'cathay pacific', '港铁': 'mtr', '八达通': 'octopus',
+  '携程': 'trip.com', '去哪儿': 'qunar', '飞猪': 'fliggy',
+  '网易': 'netease', '腾讯': 'tencent', '百度': 'baidu',
+  '哔哩哔哩': 'bilibili', '爱奇艺': 'iqiyi', '芒果tv': 'mango tv',
+  '网飞': 'netflix', '迪士尼': 'disney',
+};
+
+// ============================================================
 //  AUTO-CATEGORIZER
 // ============================================================
 function categorize(counterparty, description) {
-  const text = (counterparty + ' ' + description).toLowerCase();
+  const cpLower = counterparty.trim().toLowerCase();
+  // 1. Check learned mappings first (highest priority)
+  if (learnedMappings[cpLower] && categories.find(c => c.id === learnedMappings[cpLower])) {
+    return learnedMappings[cpLower];
+  }
+  // 2. Build expanded search text with aliases
+  let text = (counterparty + ' ' + description).toLowerCase();
+  // Expand with aliases: if text contains a known alias key, append its pair
+  for (const [key, val] of Object.entries(MERCHANT_ALIASES)) {
+    if (text.includes(key.toLowerCase())) {
+      text += ' ' + val.toLowerCase();
+    }
+  }
+  // 3. Keyword matching
   for (const cat of categories) {
     if (cat.id === 'uncategorized') continue;
     for (const kw of cat.keywords) {
@@ -1038,6 +1130,14 @@ function categorize(counterparty, description) {
     }
   }
   return 'uncategorized';
+}
+
+function learnMapping(tx, catId) {
+  if (!tx || !catId || catId === 'uncategorized') return;
+  const cp = tx.counterparty.trim().toLowerCase();
+  if (cp.length > 0) {
+    learnedMappings[cp] = catId;
+  }
 }
 
 // ============================================================
@@ -1738,7 +1838,10 @@ document.addEventListener('click', () => {
 
 function reassignCategory(txId, catId) {
   const tx = DB.transactions.find(t => t.id === txId);
-  if (tx) tx.category = catId;
+  if (tx) {
+    tx.category = catId;
+    learnMapping(tx, catId);
+  }
   document.querySelectorAll('.cat-dropdown').forEach(d => d.style.display = 'none');
   openDropdownId = null;
   renderTransactions();
@@ -1753,7 +1856,10 @@ function openBulkCategorize() {
 function bulkReassign(catId) {
   selectedIds.forEach(id => {
     const tx = DB.transactions.find(t => t.id === id);
-    if (tx) tx.category = catId;
+    if (tx) {
+      tx.category = catId;
+      learnMapping(tx, catId);
+    }
   });
   selectedIds.clear();
   closeModal();
@@ -1768,6 +1874,107 @@ function bulkDelete() {
   renderTransactions();
   saveToStorage();
   showToast('Transactions deleted');
+}
+
+// ============================================================
+//  REVIEW PAGE
+// ============================================================
+let reviewPage = 1;
+const REVIEW_PER_PAGE = 30;
+
+function renderReview() {
+  const container = document.getElementById('reviewContent');
+  const uncategorized = DB.transactions.filter(t => t.category === 'uncategorized');
+  const total = DB.transactions.length;
+  const categorized = total - uncategorized.length;
+  const pct = total > 0 ? Math.round((categorized / total) * 100) : 100;
+
+  if (uncategorized.length === 0) {
+    container.innerHTML = `<div class="empty-state">
+      <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      <h3>All caught up</h3><p>Every transaction has been categorized.</p>
+      <button class="btn btn-primary" onclick="showPage('dashboard')">View Dashboard</button></div>`;
+    document.getElementById('reviewSubtitle').textContent = 'All transactions are categorized.';
+    return;
+  }
+
+  const totalPages = Math.max(1, Math.ceil(uncategorized.length / REVIEW_PER_PAGE));
+  reviewPage = Math.min(reviewPage, totalPages);
+  const start = (reviewPage - 1) * REVIEW_PER_PAGE;
+  const pageItems = uncategorized.slice(start, start + REVIEW_PER_PAGE);
+
+  document.getElementById('reviewSubtitle').textContent = `${uncategorized.length} uncategorized transaction(s) remaining.`;
+
+  const catButtons = categories.filter(c => c.id !== 'uncategorized').map(c =>
+    `<button style="background:${c.color}15; color:${c.color}; border-color:${c.color}40;" onclick="reviewAssign(TX_ID, '${c.id}')">${c.icon} ${c.name}</button>`
+  ).join('');
+
+  container.innerHTML = `
+    <div class="review-progress">
+      <div class="review-stats">
+        <span><strong>${categorized}</strong> / ${total} categorized</span>
+        <span><strong>${pct}%</strong> complete</span>
+      </div>
+      <div class="review-progress-bar"><div class="review-progress-fill" style="width:${pct}%"></div></div>
+    </div>
+    <div class="review-list">
+      ${pageItems.map(t => `
+        <div class="review-item" id="review-${t.id}">
+          <div class="review-date">${t.date}</div>
+          <div class="review-info">
+            <div class="review-cp" title="${escHtml(t.counterparty)}">${escHtml(t.counterparty)}</div>
+            <div class="review-desc" title="${escHtml(t.description)}">${escHtml(t.description)}</div>
+          </div>
+          <div class="review-amount">${t.type === 'income' ? '+' : '-'}${formatCurrency(t.amount, t.originalCurrency)}</div>
+          <div class="review-cats">${catButtons.replace(/TX_ID/g, t.id)}</div>
+        </div>
+      `).join('')}
+    </div>
+    ${totalPages > 1 ? `
+    <div class="table-footer" style="margin-top:12px;">
+      <span>Showing ${start + 1}\u2013${Math.min(start + REVIEW_PER_PAGE, uncategorized.length)} of ${uncategorized.length}</span>
+      <div class="pagination">
+        <button class="page-btn" onclick="reviewPage=1;renderReview();" ${reviewPage<=1?'disabled':''}>\u00ab</button>
+        <button class="page-btn" onclick="reviewPage--;renderReview();" ${reviewPage<=1?'disabled':''}>\u2039</button>
+        <span style="padding:4px 8px;font-size:12px;">Page ${reviewPage} of ${totalPages}</span>
+        <button class="page-btn" onclick="reviewPage++;renderReview();" ${reviewPage>=totalPages?'disabled':''}>\u203a</button>
+        <button class="page-btn" onclick="reviewPage=${totalPages};renderReview();" ${reviewPage>=totalPages?'disabled':''}>\u00bb</button>
+      </div>
+    </div>` : ''}
+  `;
+}
+
+function reviewAssign(txId, catId) {
+  const tx = DB.transactions.find(t => t.id === txId);
+  if (!tx) return;
+  tx.category = catId;
+  learnMapping(tx, catId);
+  // Animate the row
+  const row = document.getElementById('review-' + txId);
+  if (row) {
+    row.classList.add('assigned');
+    const cat = categories.find(c => c.id === catId);
+    setTimeout(() => renderReview(), 350);
+  } else {
+    renderReview();
+  }
+  saveToStorage();
+}
+
+function applyLearnedToAll() {
+  let count = 0;
+  DB.transactions.forEach(t => {
+    if (t.category === 'uncategorized') {
+      const newCat = categorize(t.counterparty, t.description);
+      if (newCat !== 'uncategorized') {
+        t.category = newCat;
+        count++;
+      }
+    }
+  });
+  saveToStorage();
+  renderReview();
+  showToast(count > 0 ? `Auto-categorized ${count} transaction(s)` : 'No new matches found');
 }
 
 // ============================================================
@@ -1950,6 +2157,7 @@ function saveToStorage() {
       categories: categories,
       fxRates: fxRates,
       displayCurrency: displayCurrency,
+      learnedMappings: learnedMappings,
       theme: document.documentElement.getAttribute('data-theme'),
       version: 1
     };
@@ -1979,6 +2187,9 @@ function loadFromStorage() {
     }
     if (data.displayCurrency) {
       displayCurrency = data.displayCurrency;
+    }
+    if (data.learnedMappings && typeof data.learnedMappings === 'object') {
+      learnedMappings = data.learnedMappings;
     }
     if (data.theme) {
       document.documentElement.setAttribute('data-theme', data.theme);
@@ -2023,6 +2234,10 @@ function loadFromStorage() {
     <button onclick="showPage('transactions')" data-page="transactions">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
       Txns
+    </button>
+    <button onclick="showPage('review')" data-page="review">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      Review
     </button>
     <button onclick="showPage('settings')" data-page="settings">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
