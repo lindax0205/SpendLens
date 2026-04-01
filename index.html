@@ -648,6 +648,59 @@ body {
 .review-progress-fill { height: 100%; background: linear-gradient(90deg, var(--color-accent-pink), var(--color-accent-sky)); border-radius: 3px; transition: width 0.4s ease; }
 .review-stats { display: flex; gap: 16px; font-size: 13px; color: var(--color-text-muted); }
 .review-stats strong { color: var(--color-text); }
+.review-group {
+  padding: 16px 18px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  transition: transform 0.15s ease, box-shadow 0.2s, opacity 0.3s;
+}
+.review-group:hover { box-shadow: var(--shadow-sm); }
+.review-group.assigned { opacity: 0.5; transform: scale(0.98); }
+.review-group-header {
+  display: flex; align-items: center; gap: 14px; margin-bottom: 10px;
+}
+.review-group-header .review-cp { font-weight: 650; font-size: 14px; flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.review-group-count {
+  font-size: 11px; font-weight: 600;
+  background: var(--color-primary); color: #fff;
+  padding: 2px 9px; border-radius: var(--radius-pill);
+  white-space: nowrap;
+}
+.review-group-meta {
+  display: flex; gap: 16px; font-size: 12px; color: var(--color-text-muted); margin-bottom: 10px;
+}
+.review-group-meta strong { color: var(--color-text); }
+.review-group-txns {
+  max-height: 0; overflow: hidden; transition: max-height 0.3s ease;
+}
+.review-group.expanded .review-group-txns {
+  max-height: 2000px;
+}
+.review-group-txn {
+  display: flex; align-items: center; gap: 12px;
+  padding: 6px 0; border-top: 1px solid var(--color-border);
+  font-size: 12px; color: var(--color-text-muted);
+}
+.review-group-txn .rg-date { min-width: 72px; }
+.review-group-txn .rg-desc { flex: 1; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.review-group-txn .rg-amt { font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; min-width: 80px; color: var(--color-text); }
+.review-group-expand {
+  background: none; border: none; cursor: pointer; font-size: 12px;
+  color: var(--color-primary); font-weight: 550; padding: 0;
+  transition: color 0.15s;
+}
+.review-group-expand:hover { text-decoration: underline; }
+.review-mode-toggle {
+  display: inline-flex; border-radius: var(--radius-pill); overflow: hidden; border: 1px solid var(--color-border); background: var(--color-surface-2);
+}
+.review-mode-toggle button {
+  padding: 5px 14px; font-size: 12px; font-weight: 550; border: none; cursor: pointer;
+  background: transparent; color: var(--color-text-muted); transition: all 0.15s ease;
+}
+.review-mode-toggle button.active {
+  background: var(--color-primary); color: #fff;
+}
 
 .fx-table { width: 100%; font-size: 13px; }
 .fx-table td, .fx-table th { padding: 8px 12px; text-align: left; border-bottom: 1px solid var(--color-border); }
@@ -945,7 +998,11 @@ body {
         <h1>Review Uncategorized</h1>
         <p id="reviewSubtitle">Quickly assign categories to uncategorized transactions.</p>
       </div>
-      <div style="display:flex; gap:8px;">
+      <div style="display:flex; gap:8px; align-items:center;">
+        <div class="review-mode-toggle">
+          <button class="active" onclick="setReviewMode('grouped')" id="reviewModeGrouped">Grouped</button>
+          <button onclick="setReviewMode('individual')" id="reviewModeIndividual">Individual</button>
+        </div>
         <button class="btn btn-secondary btn-sm" onclick="applyLearnedToAll()" title="Re-run auto-categorizer with learned mappings on all uncategorized items">Re-categorize All</button>
       </div>
     </div>
@@ -1881,6 +1938,29 @@ function bulkDelete() {
 // ============================================================
 let reviewPage = 1;
 const REVIEW_PER_PAGE = 30;
+const REVIEW_GROUPS_PER_PAGE = 20;
+let reviewMode = 'grouped'; // 'grouped' or 'individual'
+
+function setReviewMode(mode) {
+  reviewMode = mode;
+  reviewPage = 1;
+  document.getElementById('reviewModeGrouped').classList.toggle('active', mode === 'grouped');
+  document.getElementById('reviewModeIndividual').classList.toggle('active', mode === 'individual');
+  renderReview();
+}
+
+function buildMerchantGroups(uncategorized) {
+  const groups = new Map();
+  uncategorized.forEach(t => {
+    const key = t.counterparty.trim().toLowerCase();
+    if (!groups.has(key)) {
+      groups.set(key, { name: t.counterparty, key: key, txns: [] });
+    }
+    groups.get(key).txns.push(t);
+  });
+  // Sort: largest groups first so user can knock out the most in one click
+  return Array.from(groups.values()).sort((a, b) => b.txns.length - a.txns.length);
+}
 
 function renderReview() {
   const container = document.getElementById('reviewContent');
@@ -1898,6 +1978,84 @@ function renderReview() {
     return;
   }
 
+  const progressHtml = `
+    <div class="review-progress">
+      <div class="review-stats">
+        <span><strong>${categorized}</strong> / ${total} categorized</span>
+        <span><strong>${pct}%</strong> complete</span>
+      </div>
+      <div class="review-progress-bar"><div class="review-progress-fill" style="width:${pct}%"></div></div>
+    </div>`;
+
+  if (reviewMode === 'grouped') {
+    renderReviewGrouped(container, uncategorized, progressHtml);
+  } else {
+    renderReviewIndividual(container, uncategorized, progressHtml);
+  }
+}
+
+function renderReviewGrouped(container, uncategorized, progressHtml) {
+  const groups = buildMerchantGroups(uncategorized);
+  const totalPages = Math.max(1, Math.ceil(groups.length / REVIEW_GROUPS_PER_PAGE));
+  reviewPage = Math.min(reviewPage, totalPages);
+  const start = (reviewPage - 1) * REVIEW_GROUPS_PER_PAGE;
+  const pageGroups = groups.slice(start, start + REVIEW_GROUPS_PER_PAGE);
+
+  const uniqueMerchants = groups.length;
+  document.getElementById('reviewSubtitle').textContent =
+    `${uncategorized.length} transaction(s) across ${uniqueMerchants} merchant(s) — assign once per merchant.`;
+
+  const catBtnsTpl = categories.filter(c => c.id !== 'uncategorized').map(c =>
+    `<button style="background:${c.color}15; color:${c.color}; border-color:${c.color}40;" onclick="reviewAssignGroup('GROUP_KEY', '${c.id}')">${c.icon} ${c.name}</button>`
+  ).join('');
+
+  container.innerHTML = progressHtml + `
+    <div class="review-list">
+      ${pageGroups.map(g => {
+        const totalAmt = g.txns.reduce((s, t) => s + t.amount * (fxRates[t.originalCurrency] || 1), 0);
+        const dates = g.txns.map(t => t.date).sort();
+        const dateRange = dates.length === 1 ? dates[0] : dates[0] + ' — ' + dates[dates.length - 1];
+        const safeKey = g.key.replace(/\\/g, '\\\\').replace(/'/g, "\\'");
+        const cssId = 'rg-' + g.key.replace(/[^a-zA-Z0-9]/g, '_');
+        return `
+        <div class="review-group" id="${cssId}">
+          <div class="review-group-header">
+            <div class="review-cp" title="${escHtml(g.name)}">${escHtml(g.name)}</div>
+            <span class="review-group-count">${g.txns.length} txn${g.txns.length > 1 ? 's' : ''}</span>
+          </div>
+          <div class="review-group-meta">
+            <span>Total: <strong>${displayCurrency} ${(totalAmt / (fxRates[displayCurrency] || 1)).toLocaleString(undefined, {minimumFractionDigits: 2, maximumFractionDigits: 2})}</strong></span>
+            <span>${dateRange}</span>
+            ${g.txns.length > 1 ? `<button class="review-group-expand" onclick="toggleGroupExpand('${cssId}')">Show details</button>` : ''}
+          </div>
+          ${g.txns.length > 1 ? `<div class="review-group-txns">
+            ${g.txns.map(t => `
+              <div class="review-group-txn">
+                <span class="rg-date">${t.date}</span>
+                <span class="rg-desc" title="${escHtml(t.description)}">${escHtml(t.description || t.counterparty)}</span>
+                <span class="rg-amt">${t.type === 'income' ? '+' : '-'}${formatCurrency(t.amount, t.originalCurrency)}</span>
+              </div>
+            `).join('')}
+          </div>` : ''}
+          <div class="review-cats">${catBtnsTpl.replace(/GROUP_KEY/g, safeKey)}</div>
+        </div>`;
+      }).join('')}
+    </div>
+    ${totalPages > 1 ? `
+    <div class="table-footer" style="margin-top:12px;">
+      <span>Showing ${start + 1}\u2013${Math.min(start + REVIEW_GROUPS_PER_PAGE, groups.length)} of ${groups.length} merchants</span>
+      <div class="pagination">
+        <button class="page-btn" onclick="reviewPage=1;renderReview();" ${reviewPage<=1?'disabled':''}>\u00ab</button>
+        <button class="page-btn" onclick="reviewPage--;renderReview();" ${reviewPage<=1?'disabled':''}>\u2039</button>
+        <span style="padding:4px 8px;font-size:12px;">Page ${reviewPage} of ${totalPages}</span>
+        <button class="page-btn" onclick="reviewPage++;renderReview();" ${reviewPage>=totalPages?'disabled':''}>\u203a</button>
+        <button class="page-btn" onclick="reviewPage=${totalPages};renderReview();" ${reviewPage>=totalPages?'disabled':''}>\u00bb</button>
+      </div>
+    </div>` : ''}
+  `;
+}
+
+function renderReviewIndividual(container, uncategorized, progressHtml) {
   const totalPages = Math.max(1, Math.ceil(uncategorized.length / REVIEW_PER_PAGE));
   reviewPage = Math.min(reviewPage, totalPages);
   const start = (reviewPage - 1) * REVIEW_PER_PAGE;
@@ -1909,14 +2067,7 @@ function renderReview() {
     `<button style="background:${c.color}15; color:${c.color}; border-color:${c.color}40;" onclick="reviewAssign(TX_ID, '${c.id}')">${c.icon} ${c.name}</button>`
   ).join('');
 
-  container.innerHTML = `
-    <div class="review-progress">
-      <div class="review-stats">
-        <span><strong>${categorized}</strong> / ${total} categorized</span>
-        <span><strong>${pct}%</strong> complete</span>
-      </div>
-      <div class="review-progress-bar"><div class="review-progress-fill" style="width:${pct}%"></div></div>
-    </div>
+  container.innerHTML = progressHtml + `
     <div class="review-list">
       ${pageItems.map(t => `
         <div class="review-item" id="review-${t.id}">
@@ -1944,16 +2095,44 @@ function renderReview() {
   `;
 }
 
+function toggleGroupExpand(cssId) {
+  const el = document.getElementById(cssId);
+  if (!el) return;
+  const isExpanded = el.classList.toggle('expanded');
+  const btn = el.querySelector('.review-group-expand');
+  if (btn) btn.textContent = isExpanded ? 'Hide details' : 'Show details';
+}
+
+function reviewAssignGroup(groupKey, catId) {
+  const txns = DB.transactions.filter(t =>
+    t.category === 'uncategorized' && t.counterparty.trim().toLowerCase() === groupKey
+  );
+  if (txns.length === 0) return;
+  txns.forEach(t => { t.category = catId; });
+  // Learn from the first transaction
+  learnMapping(txns[0], catId);
+  // Animate the group card
+  const cssId = 'rg-' + groupKey.replace(/[^a-zA-Z0-9]/g, '_');
+  const row = document.getElementById(cssId);
+  if (row) {
+    row.classList.add('assigned');
+    setTimeout(() => renderReview(), 350);
+  } else {
+    renderReview();
+  }
+  saveToStorage();
+  const cat = categories.find(c => c.id === catId);
+  showToast(`${cat ? cat.icon + ' ' : ''}Assigned ${txns.length} transaction(s) to ${cat ? cat.name : catId}`);
+}
+
 function reviewAssign(txId, catId) {
   const tx = DB.transactions.find(t => t.id === txId);
   if (!tx) return;
   tx.category = catId;
   learnMapping(tx, catId);
-  // Animate the row
   const row = document.getElementById('review-' + txId);
   if (row) {
     row.classList.add('assigned');
-    const cat = categories.find(c => c.id === catId);
     setTimeout(() => renderReview(), 350);
   } else {
     renderReview();
